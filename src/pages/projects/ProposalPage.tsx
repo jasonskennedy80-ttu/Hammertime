@@ -1,8 +1,15 @@
 import { useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { WrenchScrewdriverIcon, PrinterIcon, ArrowLeftIcon } from '@heroicons/react/24/outline'
+import {
+  WrenchScrewdriverIcon,
+  PrinterIcon,
+  ArrowLeftIcon,
+  EnvelopeIcon,
+  CheckCircleIcon,
+} from '@heroicons/react/24/outline'
 import { useProjectWithRelations } from '@/hooks/useProjects'
 import { useCompany } from '@/contexts/CompanyContext'
+import { sendProposal } from '@/services/proposal.service'
 import { PageSpinner } from '@/components/ui/Spinner'
 import { ROUTES } from '@/router/routes'
 import { formatCurrency, formatDate, formatPhone, formatAddress } from '@/lib/utils/format'
@@ -16,12 +23,51 @@ export function ProposalPage() {
   const [validDays, setValidDays] = useState(30)
   const { data: project, isLoading } = useProjectWithRelations(projectId!)
 
+  // Send modal state
+  const [sendOpen, setSendOpen] = useState(false)
+  const [sendTo, setSendTo] = useState('')
+  const [sendSubject, setSendSubject] = useState('')
+  const [sendMessage, setSendMessage] = useState('')
+  const [sending, setSending] = useState(false)
+  const [sendError, setSendError] = useState<string | null>(null)
+  const [sendSuccess, setSendSuccess] = useState(false)
+
   if (isLoading) return <PageSpinner />
   if (!project) return <p className="text-center py-16 text-slate-500">Project not found.</p>
 
   const customer = project.customer
   const proposalDate = format(new Date(), 'MMMM d, yyyy')
   const validUntil = format(addDays(new Date(), validDays), 'MMMM d, yyyy')
+
+  function openSendModal() {
+    setSendTo(customer.email ?? '')
+    setSendSubject(`Proposal: ${project!.name}`)
+    setSendMessage('')
+    setSendError(null)
+    setSendSuccess(false)
+    setSendOpen(true)
+  }
+
+  async function handleSend() {
+    if (!sendTo) { setSendError('Recipient email is required.'); return }
+    setSending(true)
+    setSendError(null)
+    try {
+      await sendProposal({
+        to: sendTo,
+        subject: sendSubject,
+        message: sendMessage || undefined,
+        project: project!,
+        company,
+        validUntil,
+      })
+      setSendSuccess(true)
+    } catch (err: any) {
+      setSendError(err.message ?? 'Failed to send. Please try again.')
+    } finally {
+      setSending(false)
+    }
+  }
 
   return (
     <div className="min-h-screen bg-slate-100 print:bg-white">
@@ -48,6 +94,13 @@ export function ProposalPage() {
           days
         </label>
         <button
+          onClick={openSendModal}
+          className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-300 text-slate-700 text-sm font-medium rounded-lg hover:bg-slate-50 transition-colors"
+        >
+          <EnvelopeIcon className="h-4 w-4" />
+          Send to Customer
+        </button>
+        <button
           onClick={() => window.print()}
           className="flex items-center gap-2 px-4 py-2 bg-sky-600 text-white text-sm font-medium rounded-lg hover:bg-sky-700 transition-colors"
         >
@@ -55,6 +108,100 @@ export function ProposalPage() {
           Print / Save PDF
         </button>
       </div>
+
+      {/* Send Modal */}
+      {sendOpen && (
+        <div className="print:hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
+          <div className="bg-white rounded-2xl shadow-xl w-full max-w-md p-6">
+            {sendSuccess ? (
+              <div className="flex flex-col items-center text-center py-4">
+                <CheckCircleIcon className="h-12 w-12 text-green-500 mb-3" />
+                <p className="text-lg font-semibold text-slate-900 mb-1">Proposal Sent!</p>
+                <p className="text-sm text-slate-500 mb-6">
+                  The proposal was emailed to <strong>{sendTo}</strong>.
+                </p>
+                <button
+                  onClick={() => setSendOpen(false)}
+                  className="px-5 py-2 bg-sky-600 text-white text-sm font-medium rounded-lg hover:bg-sky-700"
+                >
+                  Done
+                </button>
+              </div>
+            ) : (
+              <>
+                <div className="flex items-center justify-between mb-5">
+                  <h2 className="text-base font-semibold text-slate-900">Send Proposal</h2>
+                  <button
+                    onClick={() => setSendOpen(false)}
+                    className="text-slate-400 hover:text-slate-600 text-lg leading-none"
+                  >
+                    ✕
+                  </button>
+                </div>
+
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 mb-1">To *</label>
+                    <input
+                      type="email"
+                      value={sendTo}
+                      onChange={(e) => setSendTo(e.target.value)}
+                      placeholder="customer@example.com"
+                      className="w-full rounded-lg border border-slate-300 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 mb-1">Subject</label>
+                    <input
+                      type="text"
+                      value={sendSubject}
+                      onChange={(e) => setSendSubject(e.target.value)}
+                      className="w-full rounded-lg border border-slate-300 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 mb-1">
+                      Personal Message <span className="text-slate-400 font-normal">(optional)</span>
+                    </label>
+                    <textarea
+                      value={sendMessage}
+                      onChange={(e) => setSendMessage(e.target.value)}
+                      rows={3}
+                      placeholder={`Hi ${customer.first_name}, please find your proposal below. Let me know if you have any questions!`}
+                      className="w-full rounded-lg border border-slate-300 px-3 py-2.5 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-sky-500"
+                    />
+                  </div>
+
+                  {sendError && (
+                    <p className="text-sm text-red-600 bg-red-50 rounded-lg px-3 py-2">{sendError}</p>
+                  )}
+                </div>
+
+                <div className="flex gap-3 mt-6">
+                  <button
+                    onClick={() => setSendOpen(false)}
+                    className="flex-1 px-4 py-2.5 text-sm font-medium text-slate-700 border border-slate-300 rounded-lg hover:bg-slate-50 transition-colors"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={handleSend}
+                    disabled={sending}
+                    className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-sky-600 text-white text-sm font-medium rounded-lg hover:bg-sky-700 disabled:opacity-60 transition-colors"
+                  >
+                    {sending ? (
+                      <span className="h-4 w-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                    ) : (
+                      <EnvelopeIcon className="h-4 w-4" />
+                    )}
+                    {sending ? 'Sending…' : 'Send Proposal'}
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* Document */}
       <div className="max-w-[850px] mx-auto my-8 print:my-0 bg-white shadow-lg print:shadow-none p-10 print:p-8">
@@ -270,7 +417,7 @@ export function ProposalPage() {
         <div className="mb-10 p-4 bg-slate-50 rounded-lg border border-slate-200 text-xs text-slate-500 leading-relaxed">
           <p className="font-semibold text-slate-600 mb-1">Terms &amp; Conditions</p>
           <p>
-            This proposal is valid for 30 days from the date above. Work will begin upon receipt of the
+            This proposal is valid until {validUntil}. Work will begin upon receipt of the
             acceptance draw and signed agreement. All materials remain the property of the contractor
             until paid in full. Contractor is not responsible for delays due to weather, material
             availability, or other circumstances beyond our control. Any changes to the scope of work
