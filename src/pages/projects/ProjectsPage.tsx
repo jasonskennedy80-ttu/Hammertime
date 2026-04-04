@@ -1,9 +1,14 @@
+import { useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
+import { PlusIcon } from '@heroicons/react/24/outline'
 import { useProjects } from '@/hooks/useProjects'
+import { useCustomers } from '@/hooks/useCustomers'
 import { PageHeader } from '@/components/layout/PageHeader'
+import { Button } from '@/components/ui/Button'
 import { SearchInput } from '@/components/ui/SearchInput'
 import { Select } from '@/components/ui/Select'
 import { Card } from '@/components/ui/Card'
+import { Modal } from '@/components/ui/Modal'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { PageSpinner } from '@/components/ui/Spinner'
 import { ProjectStatusBadge } from '@/components/projects/ProjectStatusBadge'
@@ -24,6 +29,8 @@ const statusOptions = [
 export function ProjectsPage() {
   const navigate = useNavigate()
   const [searchParams, setSearchParams] = useSearchParams()
+  const [showCustomerPicker, setShowCustomerPicker] = useState(false)
+  const [customerSearch, setCustomerSearch] = useState('')
   const search = searchParams.get('q') ?? ''
   const status = (searchParams.get('status') as ProjectStatus | '') ?? ''
   const type = (searchParams.get('type') as ProjectType | '') ?? ''
@@ -34,6 +41,10 @@ export function ProjectsPage() {
     type: type || undefined,
   })
 
+  const { data: customers, isLoading: customersLoading } = useCustomers(
+    showCustomerPicker ? { search: customerSearch || undefined } : undefined,
+  )
+
   function set(key: string, value: string) {
     setSearchParams((p) => { value ? p.set(key, value) : p.delete(key); return p })
   }
@@ -43,7 +54,54 @@ export function ProjectsPage() {
       <PageHeader
         title="Projects"
         subtitle={data ? `${data.count} total` : undefined}
+        actions={
+          <Button
+            size="sm"
+            leftIcon={<PlusIcon />}
+            onClick={() => setShowCustomerPicker(true)}
+          >
+            New Project
+          </Button>
+        }
       />
+
+      <Modal
+        open={showCustomerPicker}
+        onClose={() => { setShowCustomerPicker(false); setCustomerSearch('') }}
+        title="Select a Customer"
+        size="md"
+      >
+        <SearchInput
+          value={customerSearch}
+          onChange={setCustomerSearch}
+          placeholder="Search customers..."
+          className="mb-4"
+        />
+        {customersLoading ? (
+          <p className="text-sm text-slate-500 text-center py-6">Loading...</p>
+        ) : !customers?.data.length ? (
+          <p className="text-sm text-slate-500 text-center py-6">No customers found.</p>
+        ) : (
+          <div className="space-y-1 max-h-72 overflow-y-auto">
+            {customers.data.map((c) => (
+              <button
+                key={c.id}
+                onClick={() => {
+                  setShowCustomerPicker(false)
+                  setCustomerSearch('')
+                  navigate(ROUTES.projectNew(c.id))
+                }}
+                className="w-full text-left px-3 py-2.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
+              >
+                <p className="text-sm font-medium text-slate-900 dark:text-slate-100">{c.company || `${c.first_name} ${c.last_name}`}</p>
+                {c.company && (
+                  <p className="text-xs text-slate-500 dark:text-slate-400">{c.first_name} {c.last_name}</p>
+                )}
+              </button>
+            ))}
+          </div>
+        )}
+      </Modal>
 
       <div className="flex flex-col sm:flex-row gap-3 mb-5 flex-wrap">
         <SearchInput

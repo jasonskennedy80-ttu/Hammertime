@@ -112,12 +112,12 @@ export function ProposalPage() {
       {/* Send Modal */}
       {sendOpen && (
         <div className="print:hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
-          <div className="bg-white rounded-2xl shadow-xl w-full max-w-md p-6">
+          <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-xl w-full max-w-md p-6">
             {sendSuccess ? (
               <div className="flex flex-col items-center text-center py-4">
                 <CheckCircleIcon className="h-12 w-12 text-green-500 mb-3" />
-                <p className="text-lg font-semibold text-slate-900 mb-1">Proposal Sent!</p>
-                <p className="text-sm text-slate-500 mb-6">
+                <p className="text-lg font-semibold text-slate-900 dark:text-slate-100 mb-1">Proposal Sent!</p>
+                <p className="text-sm text-slate-500 dark:text-slate-400 mb-6">
                   The proposal was emailed to <strong>{sendTo}</strong>.
                 </p>
                 <button
@@ -130,10 +130,10 @@ export function ProposalPage() {
             ) : (
               <>
                 <div className="flex items-center justify-between mb-5">
-                  <h2 className="text-base font-semibold text-slate-900">Send Proposal</h2>
+                  <h2 className="text-base font-semibold text-slate-900 dark:text-slate-100">Send Proposal</h2>
                   <button
                     onClick={() => setSendOpen(false)}
-                    className="text-slate-400 hover:text-slate-600 text-lg leading-none"
+                    className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 text-lg leading-none"
                   >
                     ✕
                   </button>
@@ -141,34 +141,34 @@ export function ProposalPage() {
 
                 <div className="space-y-4">
                   <div>
-                    <label className="block text-sm font-medium text-slate-700 mb-1">To *</label>
+                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">To *</label>
                     <input
                       type="email"
                       value={sendTo}
                       onChange={(e) => setSendTo(e.target.value)}
                       placeholder="customer@example.com"
-                      className="w-full rounded-lg border border-slate-300 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500"
+                      className="w-full rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-slate-700 mb-1">Subject</label>
+                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Subject</label>
                     <input
                       type="text"
                       value={sendSubject}
                       onChange={(e) => setSendSubject(e.target.value)}
-                      className="w-full rounded-lg border border-slate-300 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500"
+                      className="w-full rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-slate-700 mb-1">
-                      Personal Message <span className="text-slate-400 font-normal">(optional)</span>
+                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
+                      Personal Message <span className="text-slate-400 dark:text-slate-500 font-normal">(optional)</span>
                     </label>
                     <textarea
                       value={sendMessage}
                       onChange={(e) => setSendMessage(e.target.value)}
                       rows={3}
                       placeholder={`Hi ${customer.first_name}, please find your proposal below. Let me know if you have any questions!`}
-                      className="w-full rounded-lg border border-slate-300 px-3 py-2.5 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-sky-500"
+                      className="w-full rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500 px-3 py-2.5 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-sky-500"
                     />
                   </div>
 
@@ -180,7 +180,7 @@ export function ProposalPage() {
                 <div className="flex gap-3 mt-6">
                   <button
                     onClick={() => setSendOpen(false)}
-                    className="flex-1 px-4 py-2.5 text-sm font-medium text-slate-700 border border-slate-300 rounded-lg hover:bg-slate-50 transition-colors"
+                    className="flex-1 px-4 py-2.5 text-sm font-medium text-slate-700 dark:text-slate-300 border border-slate-300 dark:border-slate-600 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
                   >
                     Cancel
                   </button>
