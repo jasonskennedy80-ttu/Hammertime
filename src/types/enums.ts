@@ -53,6 +53,14 @@ export type ActivityAction =
 
 export type ContactMethod = 'phone' | 'email' | 'text'
 
+export const DOCUMENT_STATUS_LABELS: Record<DocumentStatus, string> = {
+  draft: 'Draft',
+  sent: 'Sent',
+  viewed: 'Viewed',
+  signed: 'Signed',
+  expired: 'Expired',
+}
+
 export const PROJECT_TYPE_LABELS: Record<ProjectType, string> = {
   metal_building: 'Metal Building',
   wood_building: 'Wood Building',

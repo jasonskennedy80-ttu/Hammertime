@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
-import { PlusIcon } from '@heroicons/react/24/outline'
+import { PlusIcon, UserPlusIcon } from '@heroicons/react/24/outline'
 import { useProjects } from '@/hooks/useProjects'
 import { useCustomers } from '@/hooks/useCustomers'
 import { PageHeader } from '@/components/layout/PageHeader'
@@ -101,6 +101,19 @@ export function ProjectsPage() {
             ))}
           </div>
         )}
+        <div className="mt-4 pt-4 border-t border-slate-200 dark:border-slate-700">
+          <button
+            onClick={() => {
+              setShowCustomerPicker(false)
+              setCustomerSearch('')
+              navigate(ROUTES.customerNew)
+            }}
+            className="w-full flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium text-sky-600 dark:text-sky-400 hover:bg-sky-50 dark:hover:bg-sky-900/20 transition-colors"
+          >
+            <UserPlusIcon className="h-4 w-4" />
+            Create New Customer
+          </button>
+        </div>
       </Modal>
 
       <div className="flex flex-col sm:flex-row gap-3 mb-5 flex-wrap">

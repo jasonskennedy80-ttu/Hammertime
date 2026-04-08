@@ -10,6 +10,9 @@ export const ROUTES = {
   projectDetail: (id: string) => `/projects/${id}`,
   projectEdit: (id: string) => `/projects/${id}/edit`,
   projectProposal: (id: string) => `/projects/${id}/proposal`,
+  projectContracts: (projectId: string) => `/projects/${projectId}/contracts`,
+  contractDetail: (projectId: string, contractId: string) =>
+    `/projects/${projectId}/contracts/${contractId}`,
   scopeSectionNew: (projectId: string) => `/projects/${projectId}/scope/new`,
   scopeSectionEdit: (projectId: string, sectionId: string) =>
     `/projects/${projectId}/scope/${sectionId}/edit`,

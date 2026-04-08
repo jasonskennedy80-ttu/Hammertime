@@ -118,6 +118,14 @@ export function ProjectDetailPage() {
             <Button
               variant="secondary"
               size="sm"
+              onClick={() => navigate(ROUTES.projectContracts(projectId!))}
+              leftIcon={<DocumentTextIcon />}
+            >
+              Contracts
+            </Button>
+            <Button
+              variant="secondary"
+              size="sm"
               onClick={() => navigate(ROUTES.projectEdit(projectId!))}
               leftIcon={<PencilIcon />}
             >

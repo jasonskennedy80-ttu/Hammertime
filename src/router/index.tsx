@@ -10,6 +10,7 @@ import { ProjectsPage } from '@/pages/projects/ProjectsPage'
 import { ProjectDetailPage } from '@/pages/projects/ProjectDetailPage'
 import { ProjectFormPage } from '@/pages/projects/ProjectFormPage'
 import { ProposalPage } from '@/pages/projects/ProposalPage'
+import { ContractsPage } from '@/pages/projects/ContractsPage'
 import { SettingsPage } from '@/pages/settings/SettingsPage'
 import { ROUTES } from './routes'
 
@@ -48,6 +49,7 @@ export const router = createBrowserRouter([
       { path: 'projects', element: <ProjectsPage /> },
       { path: 'projects/:projectId', element: <ProjectDetailPage /> },
       { path: 'projects/:projectId/edit', element: <ProjectFormPage /> },
+      { path: 'projects/:projectId/contracts', element: <ContractsPage /> },
 
       // Settings
       { path: 'settings', element: <SettingsPage /> },

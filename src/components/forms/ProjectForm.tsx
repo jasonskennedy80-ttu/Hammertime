@@ -7,6 +7,7 @@ import { Select } from '@/components/ui/Select'
 import { Textarea } from '@/components/ui/Textarea'
 import { Button } from '@/components/ui/Button'
 import { PROJECT_TYPE_LABELS, PROJECT_STATUS_LABELS } from '@/types/enums'
+import { useProfiles } from '@/hooks/useProfiles'
 import type { Project } from '@/types/app.types'
 
 interface ProjectFormProps {
@@ -20,6 +21,12 @@ const typeOptions = Object.entries(PROJECT_TYPE_LABELS).map(([value, label]) => 
 const statusOptions = Object.entries(PROJECT_STATUS_LABELS).map(([value, label]) => ({ value, label }))
 
 export function ProjectForm({ customerId, defaultValues, onSubmit, isLoading }: ProjectFormProps) {
+  const { data: profiles } = useProfiles()
+  const salespersonOptions = [
+    { value: '', label: 'Unassigned' },
+    ...(profiles ?? []).map((p) => ({ value: p.id, label: p.full_name || p.id })),
+  ]
+
   const {
     register,
     handleSubmit,
@@ -38,6 +45,7 @@ export function ProjectForm({ customerId, defaultValues, onSubmit, isLoading }: 
           customer_notes: defaultValues.customer_notes ?? '',
           start_date: defaultValues.start_date ?? '',
           completion_date: defaultValues.completion_date ?? '',
+          salesperson_id: defaultValues.salesperson_id ?? '',
           tax_rate: defaultValues.tax_rate,
           discount_amount: defaultValues.discount_amount,
         }
@@ -45,6 +53,7 @@ export function ProjectForm({ customerId, defaultValues, onSubmit, isLoading }: 
           customer_id: customerId,
           status: 'lead' as const,
           type: 'metal_building' as const,
+          salesperson_id: '',
           tax_rate: 0,
           discount_amount: 0,
           name: '',
@@ -68,6 +77,9 @@ export function ProjectForm({ customerId, defaultValues, onSubmit, isLoading }: 
           </FormField>
           <FormField label="Status" error={errors.status?.message}>
             <Select {...register('status')} options={statusOptions} />
+          </FormField>
+          <FormField label="Salesperson" error={errors.salesperson_id?.message} className="sm:col-span-2">
+            <Select {...register('salesperson_id')} options={salespersonOptions} />
           </FormField>
           <FormField label="Job Site Address" error={errors.location_address?.message} className="sm:col-span-2">
             <Input {...register('location_address')} placeholder="123 Ranch Rd, Houston, TX 77001" />
