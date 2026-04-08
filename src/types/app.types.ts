@@ -80,6 +80,10 @@ export interface Project {
   updated_at: string
 }
 
+export type ProjectWithCustomer = Project & {
+  customer: { first_name: string; last_name: string; company: string | null } | null
+}
+
 export type ProjectWithRelations = Project & {
   customer: Customer
   scope_sections: ScopeSection[]

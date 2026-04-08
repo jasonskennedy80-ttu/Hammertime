@@ -1,5 +1,5 @@
 import { supabase } from '@/config/supabase'
-import type { Project, ProjectFilters, PaginatedResult, ProjectWithRelations } from '@/types/app.types'
+import type { Project, ProjectWithCustomer, ProjectFilters, PaginatedResult, ProjectWithRelations } from '@/types/app.types'
 import type { ProjectFormValues } from '@/lib/validations/project.schema'
 import { lineItemTotal } from '@/lib/utils/format'
 
@@ -9,10 +9,10 @@ export async function getProjects(
   filters: ProjectFilters = {},
   page = 1,
   pageSize = 50,
-): Promise<PaginatedResult<Project>> {
+): Promise<PaginatedResult<ProjectWithCustomer>> {
   let query = supabase
     .from(TABLE)
-    .select('*', { count: 'exact' })
+    .select('*, customer:customers(first_name, last_name, company)', { count: 'exact' })
     .order('updated_at', { ascending: false })
     .range((page - 1) * pageSize, page * pageSize - 1)
 
@@ -31,7 +31,7 @@ export async function getProjects(
 
   const { data, error, count } = await query
   if (error) throw error
-  return { data: (data ?? []) as Project[], count: count ?? 0 }
+  return { data: (data ?? []) as ProjectWithCustomer[], count: count ?? 0 }
 }
 
 export async function getProjectById(id: string): Promise<Project> {

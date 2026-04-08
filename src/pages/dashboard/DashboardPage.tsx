@@ -9,8 +9,10 @@ import { Card } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { useAuth } from '@/contexts/AuthContext'
 import { ROUTES } from '@/router/routes'
-import { formatCurrency, formatRelativeTime } from '@/lib/utils/format'
+import { formatCurrency, formatRelativeTime, formatDate } from '@/lib/utils/format'
 import { ProjectStatusBadge } from '@/components/projects/ProjectStatusBadge'
+import { PROJECT_STATUS_LABELS } from '@/types/enums'
+import type { ProjectStatus } from '@/types/enums'
 
 export function DashboardPage() {
   const navigate = useNavigate()
@@ -33,6 +35,18 @@ export function DashboardPage() {
   const activeProjects = projects?.data.filter(
     (p) => !['completed', 'cancelled'].includes(p.status),
   )
+
+  // Pipeline counts by status
+  const pipelineCounts = (projects?.data ?? []).reduce<Record<string, number>>((acc, p) => {
+    acc[p.status] = (acc[p.status] ?? 0) + 1
+    return acc
+  }, {})
+
+  // Upcoming deadlines: projects with completion_date in the future, sorted soonest first
+  const upcomingDeadlines = (projects?.data ?? [])
+    .filter((p) => p.completion_date && new Date(p.completion_date) >= new Date() && !['completed', 'cancelled'].includes(p.status))
+    .sort((a, b) => new Date(a.completion_date!).getTime() - new Date(b.completion_date!).getTime())
+    .slice(0, 5)
 
   const greeting = () => {
     const h = new Date().getHours()
@@ -82,6 +96,29 @@ export function DashboardPage() {
           color="green"
         />
       </div>
+
+      {/* Pipeline Breakdown */}
+      {projects?.data.length ? (
+        <Card className="mb-6">
+          <h2 className="font-semibold text-slate-900 dark:text-slate-100 mb-3">Project Pipeline</h2>
+          <div className="flex gap-2 flex-wrap">
+            {Object.entries(PROJECT_STATUS_LABELS).map(([status, label]) => {
+              const count = pipelineCounts[status] ?? 0
+              if (count === 0) return null
+              return (
+                <button
+                  key={status}
+                  onClick={() => navigate(`${ROUTES.projects}?status=${status}`)}
+                  className="flex items-center gap-2 px-3 py-2 rounded-lg bg-slate-50 dark:bg-slate-700/50 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
+                >
+                  <ProjectStatusBadge status={status as ProjectStatus} />
+                  <span className="text-lg font-bold text-slate-900 dark:text-slate-100">{count}</span>
+                </button>
+              )
+            })}
+          </div>
+        </Card>
+      ) : null}
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Recent Projects */}
@@ -144,6 +181,46 @@ export function DashboardPage() {
           )}
         </Card>
       </div>
+
+      {/* Upcoming Deadlines */}
+      {upcomingDeadlines.length > 0 && (
+        <Card className="mt-6">
+          <h2 className="font-semibold text-slate-900 dark:text-slate-100 mb-4">Upcoming Deadlines</h2>
+          <div className="space-y-0">
+            {upcomingDeadlines.map((project) => {
+              const daysLeft = Math.ceil(
+                (new Date(project.completion_date!).getTime() - Date.now()) / (1000 * 60 * 60 * 24),
+              )
+              return (
+                <button
+                  key={project.id}
+                  onClick={() => navigate(ROUTES.projectDetail(project.id))}
+                  className="w-full flex items-center gap-3 py-3 border-t border-slate-100 dark:border-slate-700 first:border-0 text-left hover:bg-slate-50 dark:hover:bg-slate-700/50 -mx-4 px-4 sm:-mx-6 sm:px-6 transition-colors"
+                >
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-slate-900 dark:text-slate-100 truncate">{project.name}</p>
+                    <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                      Due {formatDate(project.completion_date!)}
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-2 shrink-0">
+                    <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${
+                      daysLeft <= 7
+                        ? 'bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300'
+                        : daysLeft <= 14
+                        ? 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/40 dark:text-yellow-300'
+                        : 'bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300'
+                    }`}>
+                      {daysLeft === 0 ? 'Today' : daysLeft === 1 ? '1 day' : `${daysLeft} days`}
+                    </span>
+                    <ProjectStatusBadge status={project.status as never} />
+                  </div>
+                </button>
+              )
+            })}
+          </div>
+        </Card>
+      )}
     </div>
   )
 }

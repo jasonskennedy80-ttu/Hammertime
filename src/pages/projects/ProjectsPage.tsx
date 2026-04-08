@@ -154,8 +154,13 @@ export function ProjectsPage() {
                 <div className="flex-1 min-w-0">
                   <p className="font-semibold text-slate-900 dark:text-slate-100 truncate">{project.name}</p>
                   <div className="flex items-center gap-2 mt-0.5 flex-wrap">
+                    {project.customer && (
+                      <span className="text-xs text-slate-600 dark:text-slate-300 font-medium">
+                        {project.customer.company || `${project.customer.first_name} ${project.customer.last_name}`}
+                      </span>
+                    )}
                     <span className="text-xs text-slate-500 dark:text-slate-400">
-                      {PROJECT_TYPE_LABELS[project.type as ProjectType]}
+                      · {PROJECT_TYPE_LABELS[project.type as ProjectType]}
                     </span>
                     {project.start_date && (
                       <span className="text-xs text-slate-400 dark:text-slate-500">· {formatDate(project.start_date)}</span>

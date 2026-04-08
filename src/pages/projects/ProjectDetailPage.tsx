@@ -162,6 +162,11 @@ export function ProjectDetailPage() {
                 {project.location_address && (
                   <p className="text-sm text-slate-500 dark:text-slate-400">{project.location_address}</p>
                 )}
+                {project.salesperson && (
+                  <p className="text-sm text-slate-500 dark:text-slate-400">
+                    Salesperson: <span className="text-slate-700 dark:text-slate-300">{project.salesperson.full_name}</span>
+                  </p>
+                )}
                 <div className="flex gap-4 text-sm text-slate-500 dark:text-slate-400">
                   {project.start_date && <span>Start: {formatDate(project.start_date)}</span>}
                   {project.completion_date && <span>Est. Done: {formatDate(project.completion_date)}</span>}
