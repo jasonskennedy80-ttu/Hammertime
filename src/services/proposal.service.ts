@@ -1,6 +1,99 @@
 import { supabase } from '@/config/supabase'
-import type { ProjectWithRelations } from '@/types/app.types'
+import type { Proposal, ProjectWithRelations } from '@/types/app.types'
 import type { CompanyInfo } from '@/contexts/CompanyContext'
+
+const TABLE = 'proposals'
+
+// ─── CRUD ────────────────────────────────────────────────────────────────────
+
+export async function getProposals(projectId: string): Promise<Proposal[]> {
+  const { data, error } = await supabase
+    .from(TABLE)
+    .select('*')
+    .eq('project_id', projectId)
+    .order('version_number', { ascending: false })
+  if (error) throw error
+  return (data ?? []) as Proposal[]
+}
+
+export async function getProposalById(id: string): Promise<Proposal> {
+  const { data, error } = await supabase
+    .from(TABLE)
+    .select('*')
+    .eq('id', id)
+    .single()
+  if (error) throw error
+  return data as Proposal
+}
+
+export interface CreateProposalInput {
+  project_id: string
+  title: string
+  valid_until?: string | null
+  notes?: string | null
+  snapshot_json?: Record<string, unknown>
+}
+
+export async function createProposal(
+  values: CreateProposalInput,
+  userId: string,
+): Promise<Proposal> {
+  // Get next version number
+  const { count } = await supabase
+    .from(TABLE)
+    .select('*', { count: 'exact', head: true })
+    .eq('project_id', values.project_id)
+
+  const { data, error } = await supabase
+    .from(TABLE)
+    .insert({
+      project_id: values.project_id,
+      title: values.title,
+      valid_until: values.valid_until || null,
+      notes: values.notes || null,
+      snapshot_json: values.snapshot_json ?? {},
+      version_number: (count ?? 0) + 1,
+      status: 'draft',
+      created_by: userId,
+    })
+    .select()
+    .single()
+  if (error) throw error
+  return data as Proposal
+}
+
+export interface UpdateProposalInput {
+  title?: string
+  status?: string
+  valid_until?: string | null
+  notes?: string | null
+  snapshot_json?: Record<string, unknown>
+  sent_at?: string | null
+}
+
+export async function updateProposal(
+  id: string,
+  values: UpdateProposalInput,
+): Promise<Proposal> {
+  const { data, error } = await supabase
+    .from(TABLE)
+    .update({
+      ...values,
+      updated_at: new Date().toISOString(),
+    })
+    .eq('id', id)
+    .select()
+    .single()
+  if (error) throw error
+  return data as Proposal
+}
+
+export async function deleteProposal(id: string): Promise<void> {
+  const { error } = await supabase.from(TABLE).delete().eq('id', id)
+  if (error) throw error
+}
+
+// ─── Send ────────────────────────────────────────────────────────────────────
 
 export interface SendProposalParams {
   to: string
@@ -9,9 +102,18 @@ export interface SendProposalParams {
   project: ProjectWithRelations
   company: CompanyInfo
   validUntil: string
+  proposalId?: string
 }
 
 export async function sendProposal(params: SendProposalParams): Promise<void> {
+  // Mark proposal as sent if we have a proposal record
+  if (params.proposalId) {
+    await updateProposal(params.proposalId, {
+      status: 'sent',
+      sent_at: new Date().toISOString(),
+    })
+  }
+
   const { error } = await supabase.functions.invoke('send-proposal', {
     body: params,
   })

@@ -9,6 +9,7 @@ import { CustomerFormPage } from '@/pages/customers/CustomerFormPage'
 import { ProjectsPage } from '@/pages/projects/ProjectsPage'
 import { ProjectDetailPage } from '@/pages/projects/ProjectDetailPage'
 import { ProjectFormPage } from '@/pages/projects/ProjectFormPage'
+import { ProposalsPage } from '@/pages/projects/ProposalsPage'
 import { ProposalPage } from '@/pages/projects/ProposalPage'
 import { ContractsPage } from '@/pages/projects/ContractsPage'
 import { SettingsPage } from '@/pages/settings/SettingsPage'
@@ -49,6 +50,7 @@ export const router = createBrowserRouter([
       { path: 'projects', element: <ProjectsPage /> },
       { path: 'projects/:projectId', element: <ProjectDetailPage /> },
       { path: 'projects/:projectId/edit', element: <ProjectFormPage /> },
+      { path: 'projects/:projectId/proposals', element: <ProposalsPage /> },
       { path: 'projects/:projectId/contracts', element: <ContractsPage /> },
 
       // Settings

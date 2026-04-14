@@ -110,10 +110,10 @@ export function ProjectDetailPage() {
             <Button
               variant="secondary"
               size="sm"
-              onClick={() => navigate(ROUTES.projectProposal(projectId!))}
+              onClick={() => navigate(ROUTES.projectProposals(projectId!))}
               leftIcon={<DocumentTextIcon />}
             >
-              Proposal
+              Proposals
             </Button>
             <Button
               variant="secondary"

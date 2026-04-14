@@ -1,12 +1,14 @@
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import {
   WrenchScrewdriverIcon,
   PrinterIcon,
   ArrowLeftIcon,
+  ArrowDownTrayIcon,
   EnvelopeIcon,
   CheckCircleIcon,
 } from '@heroicons/react/24/outline'
+import html2pdf from 'html2pdf.js'
 import { useProjectWithRelations } from '@/hooks/useProjects'
 import { useCompany } from '@/contexts/CompanyContext'
 import { sendProposal } from '@/services/proposal.service'
@@ -22,6 +24,29 @@ export function ProposalPage() {
   const { company } = useCompany()
   const [validDays, setValidDays] = useState(30)
   const { data: project, isLoading } = useProjectWithRelations(projectId!)
+
+  const docRef = useRef<HTMLDivElement>(null)
+  const [downloading, setDownloading] = useState(false)
+
+  async function handleDownloadPdf() {
+    if (!docRef.current || !project) return
+    setDownloading(true)
+    try {
+      await html2pdf()
+        .set({
+          margin: 0,
+          filename: `${project.name.replace(/[^a-zA-Z0-9]/g, '_')}_Proposal.pdf`,
+          image: { type: 'jpeg', quality: 0.98 },
+          html2canvas: { scale: 2, useCORS: true },
+          jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' },
+          pagebreak: { mode: ['avoid-all', 'css', 'legacy'] },
+        })
+        .from(docRef.current)
+        .save()
+    } finally {
+      setDownloading(false)
+    }
+  }
 
   // Send modal state
   const [sendOpen, setSendOpen] = useState(false)
@@ -74,11 +99,11 @@ export function ProposalPage() {
       {/* Toolbar — hidden when printing */}
       <div className="print:hidden sticky top-0 z-10 bg-white border-b border-slate-200 px-6 py-3 flex items-center gap-4 flex-wrap">
         <button
-          onClick={() => navigate(ROUTES.projectDetail(projectId!))}
+          onClick={() => navigate(ROUTES.projectProposals(projectId!))}
           className="flex items-center gap-1.5 text-sm text-slate-600 hover:text-slate-900"
         >
           <ArrowLeftIcon className="h-4 w-4" />
-          Back to Project
+          Back to Proposals
         </button>
         <div className="flex-1" />
         <label className="flex items-center gap-2 text-sm text-slate-600">
@@ -101,11 +126,23 @@ export function ProposalPage() {
           Send to Customer
         </button>
         <button
+          onClick={handleDownloadPdf}
+          disabled={downloading}
+          className="flex items-center gap-2 px-4 py-2 bg-sky-600 text-white text-sm font-medium rounded-lg hover:bg-sky-700 disabled:opacity-60 transition-colors"
+        >
+          {downloading ? (
+            <span className="h-4 w-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+          ) : (
+            <ArrowDownTrayIcon className="h-4 w-4" />
+          )}
+          {downloading ? 'Generating…' : 'Download PDF'}
+        </button>
+        <button
           onClick={() => window.print()}
-          className="flex items-center gap-2 px-4 py-2 bg-sky-600 text-white text-sm font-medium rounded-lg hover:bg-sky-700 transition-colors"
+          className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-300 text-slate-700 text-sm font-medium rounded-lg hover:bg-slate-50 transition-colors"
         >
           <PrinterIcon className="h-4 w-4" />
-          Print / Save PDF
+          Print
         </button>
       </div>
 
@@ -204,7 +241,7 @@ export function ProposalPage() {
       )}
 
       {/* Document */}
-      <div className="max-w-[850px] mx-auto my-8 print:my-0 bg-white shadow-lg print:shadow-none p-10 print:p-8">
+      <div ref={docRef} className="max-w-[850px] mx-auto my-8 print:my-0 bg-white shadow-lg print:shadow-none p-10 print:p-8">
 
         {/* Header */}
         <div className="flex items-start justify-between mb-8 pb-6 border-b-2 border-slate-800">

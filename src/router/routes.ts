@@ -9,6 +9,7 @@ export const ROUTES = {
   projectNew: (customerId: string) => `/customers/${customerId}/projects/new`,
   projectDetail: (id: string) => `/projects/${id}`,
   projectEdit: (id: string) => `/projects/${id}/edit`,
+  projectProposals: (id: string) => `/projects/${id}/proposals`,
   projectProposal: (id: string) => `/projects/${id}/proposal`,
   projectContracts: (projectId: string) => `/projects/${projectId}/contracts`,
   contractDetail: (projectId: string, contractId: string) =>
