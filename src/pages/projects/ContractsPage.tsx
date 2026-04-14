@@ -1,10 +1,10 @@
 import { useState } from 'react'
 import { useParams } from 'react-router-dom'
-import { PlusIcon, PencilIcon, TrashIcon, DocumentPlusIcon, EnvelopeIcon, CheckCircleIcon } from '@heroicons/react/24/outline'
+import { PlusIcon, PencilIcon, TrashIcon, DocumentPlusIcon, EnvelopeIcon, CheckCircleIcon, ClockIcon } from '@heroicons/react/24/outline'
 import { useProjectWithRelations } from '@/hooks/useProjects'
 import { useContracts, useCreateContract, useUpdateContract, useDeleteContract } from '@/hooks/useContracts'
 import { useTemplateClauses } from '@/hooks/useTemplateClauses'
-import { useCompany } from '@/contexts/CompanyContext'
+import { useCompany } from '@/contexts/useCompany'
 import { sendContract } from '@/services/contracts.service'
 import { PageHeader } from '@/components/layout/PageHeader'
 import { Button } from '@/components/ui/Button'
@@ -21,6 +21,7 @@ import { ROUTES } from '@/router/routes'
 import { formatDate } from '@/lib/utils/format'
 import { DOCUMENT_STATUS_LABELS } from '@/types/enums'
 import type { DocumentStatus } from '@/types/enums'
+import { VersionHistory } from '@/components/documents/VersionHistory'
 import type { Contract } from '@/types/app.types'
 
 const statusColors: Record<DocumentStatus, 'gray' | 'sky' | 'yellow' | 'green' | 'red'> = {
@@ -47,6 +48,7 @@ export function ContractsPage() {
   const [formModal, setFormModal] = useState<{ open: boolean; contract?: Contract }>({ open: false })
   const [deleteModal, setDeleteModal] = useState<Contract | null>(null)
   const [clausePickerOpen, setClausePickerOpen] = useState(false)
+  const [historyId, setHistoryId] = useState<string | null>(null)
 
   // Send modal state
   const [sendModal, setSendModal] = useState<Contract | null>(null)
@@ -131,8 +133,8 @@ export function ContractsPage() {
         company,
       })
       setSendSuccess(true)
-    } catch (err: any) {
-      setSendError(err.message ?? 'Failed to send. Please try again.')
+    } catch (err: unknown) {
+      setSendError(err instanceof Error ? err.message : 'Failed to send. Please try again.')
     } finally {
       setSending(false)
     }
@@ -197,6 +199,13 @@ export function ContractsPage() {
                     <PencilIcon className="h-4 w-4" />
                   </button>
                   <button
+                    onClick={() => setHistoryId(historyId === contract.id ? null : contract.id)}
+                    className={`p-1.5 rounded ${historyId === contract.id ? 'text-sky-600' : 'text-slate-400 hover:text-sky-600'}`}
+                    title="Version history"
+                  >
+                    <ClockIcon className="h-4 w-4" />
+                  </button>
+                  <button
                     onClick={() => setDeleteModal(contract)}
                     className="p-1.5 text-slate-400 hover:text-red-600 rounded"
                   >
@@ -218,6 +227,14 @@ export function ContractsPage() {
                       <p className="text-sm text-slate-600 dark:text-slate-300 whitespace-pre-wrap">{contract.warranty_terms}</p>
                     </div>
                   )}
+                </div>
+              )}
+              {historyId === contract.id && (
+                <div className="mt-3 pt-3 border-t border-slate-100 dark:border-slate-700 px-1">
+                  <p className="text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-2">
+                    Version History
+                  </p>
+                  <VersionHistory entityType="contract" entityId={contract.id} />
                 </div>
               )}
             </Card>

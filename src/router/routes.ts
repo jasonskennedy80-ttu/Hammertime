@@ -19,5 +19,6 @@ export const ROUTES = {
     `/projects/${projectId}/scope/${sectionId}/edit`,
   lineItemNew: (projectId: string) => `/projects/${projectId}/items/new`,
   lineItemEdit: (projectId: string, itemId: string) => `/projects/${projectId}/items/${itemId}/edit`,
+  templateClauses: '/templates',
   settings: '/settings',
 } as const

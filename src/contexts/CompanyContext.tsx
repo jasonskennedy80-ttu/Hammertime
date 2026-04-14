@@ -1,13 +1,6 @@
-import { createContext, useContext, useState } from 'react'
-
-export interface CompanyInfo {
-  name: string
-  tagline: string
-  phone: string
-  email: string
-  address: string
-  license: string
-}
+import { useState } from 'react'
+import { CompanyContext } from './company-context'
+import type { CompanyInfo } from './company-context'
 
 const DEFAULTS: CompanyInfo = {
   name: 'Hammertime',
@@ -29,13 +22,6 @@ function load(): CompanyInfo {
   }
 }
 
-interface CompanyContextValue {
-  company: CompanyInfo
-  saveCompany: (info: CompanyInfo) => void
-}
-
-const CompanyContext = createContext<CompanyContextValue | null>(null)
-
 export function CompanyProvider({ children }: { children: React.ReactNode }) {
   const [company, setCompany] = useState<CompanyInfo>(load)
 
@@ -51,8 +37,4 @@ export function CompanyProvider({ children }: { children: React.ReactNode }) {
   )
 }
 
-export function useCompany() {
-  const ctx = useContext(CompanyContext)
-  if (!ctx) throw new Error('useCompany must be used within CompanyProvider')
-  return ctx
-}
+export type { CompanyInfo } from './company-context'

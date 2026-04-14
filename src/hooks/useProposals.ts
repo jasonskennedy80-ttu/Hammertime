@@ -8,7 +8,7 @@ import {
   type CreateProposalInput,
   type UpdateProposalInput,
 } from '@/services/proposal.service'
-import { useAuth } from '@/contexts/AuthContext'
+import { useAuth } from '@/contexts/useAuth'
 
 export const proposalKeys = {
   list: (projectId: string) => ['proposals', projectId] as const,

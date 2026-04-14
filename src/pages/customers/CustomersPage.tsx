@@ -25,10 +25,24 @@ export function CustomersPage() {
   })
 
   function setSearch(value: string) {
-    setSearchParams((p) => { value ? p.set('q', value) : p.delete('q'); return p })
+    setSearchParams((p) => {
+      if (value) {
+        p.set('q', value)
+      } else {
+        p.delete('q')
+      }
+      return p
+    })
   }
   function setStatus(value: string) {
-    setSearchParams((p) => { value ? p.set('status', value) : p.delete('status'); return p })
+    setSearchParams((p) => {
+      if (value) {
+        p.set('status', value)
+      } else {
+        p.delete('status')
+      }
+      return p
+    })
   }
 
   return (

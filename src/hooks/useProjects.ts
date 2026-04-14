@@ -8,7 +8,7 @@ import {
   deleteProject,
 } from '@/services/projects.service'
 import { logActivity } from '@/services/activityLog.service'
-import { useAuth } from '@/contexts/AuthContext'
+import { useAuth } from '@/contexts/useAuth'
 import type { ProjectFilters } from '@/types/app.types'
 import type { ProjectFormValues } from '@/lib/validations/project.schema'
 

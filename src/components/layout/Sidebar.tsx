@@ -8,6 +8,7 @@ import {
   ClipboardDocumentListIcon,
   WrenchScrewdriverIcon,
   Cog6ToothIcon,
+  DocumentTextIcon,
 } from '@heroicons/react/24/outline'
 import { ROUTES } from '@/router/routes'
 import { cn } from '@/lib/utils/cn'
@@ -16,6 +17,7 @@ const navItems = [
   { to: ROUTES.dashboard, label: 'Dashboard', icon: HomeIcon },
   { to: ROUTES.customers, label: 'Customers', icon: UserGroupIcon },
   { to: ROUTES.projects, label: 'Projects', icon: ClipboardDocumentListIcon },
+  { to: ROUTES.templateClauses, label: 'Templates', icon: DocumentTextIcon },
   { to: ROUTES.settings, label: 'Settings', icon: Cog6ToothIcon },
 ]
 

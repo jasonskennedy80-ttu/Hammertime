@@ -8,7 +8,7 @@ import {
   type CreateContractInput,
   type UpdateContractInput,
 } from '@/services/contracts.service'
-import { useAuth } from '@/contexts/AuthContext'
+import { useAuth } from '@/contexts/useAuth'
 
 export const contractKeys = {
   list: (projectId: string) => ['contracts', projectId] as const,

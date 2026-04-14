@@ -10,7 +10,7 @@ import {
 } from '@heroicons/react/24/outline'
 import html2pdf from 'html2pdf.js'
 import { useProjectWithRelations } from '@/hooks/useProjects'
-import { useCompany } from '@/contexts/CompanyContext'
+import { useCompany } from '@/contexts/useCompany'
 import { sendProposal } from '@/services/proposal.service'
 import { PageSpinner } from '@/components/ui/Spinner'
 import { ROUTES } from '@/router/routes'
@@ -31,16 +31,17 @@ export function ProposalPage() {
   async function handleDownloadPdf() {
     if (!docRef.current || !project) return
     setDownloading(true)
+    const pdfOptions = {
+      margin: 0,
+      filename: `${project.name.replace(/[^a-zA-Z0-9]/g, '_')}_Proposal.pdf`,
+      image: { type: 'jpeg' as const, quality: 0.98 },
+      html2canvas: { scale: 2, useCORS: true },
+      jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' as const },
+      pagebreak: { mode: ['avoid-all', 'css', 'legacy'] },
+    }
     try {
       await html2pdf()
-        .set({
-          margin: 0,
-          filename: `${project.name.replace(/[^a-zA-Z0-9]/g, '_')}_Proposal.pdf`,
-          image: { type: 'jpeg', quality: 0.98 },
-          html2canvas: { scale: 2, useCORS: true },
-          jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' },
-          pagebreak: { mode: ['avoid-all', 'css', 'legacy'] },
-        })
+        .set(pdfOptions)
         .from(docRef.current)
         .save()
     } finally {
@@ -87,8 +88,8 @@ export function ProposalPage() {
         validUntil,
       })
       setSendSuccess(true)
-    } catch (err: any) {
-      setSendError(err.message ?? 'Failed to send. Please try again.')
+    } catch (err: unknown) {
+      setSendError(err instanceof Error ? err.message : 'Failed to send. Please try again.')
     } finally {
       setSending(false)
     }

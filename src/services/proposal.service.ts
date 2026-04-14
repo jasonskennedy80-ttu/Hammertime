@@ -1,6 +1,13 @@
 import { supabase } from '@/config/supabase'
 import type { Proposal, ProjectWithRelations } from '@/types/app.types'
-import type { CompanyInfo } from '@/contexts/CompanyContext'
+import type { CompanyInfo } from '@/contexts/company-context'
+import { createDocumentVersion } from './documentVersions.service'
+
+type FunctionErrorContext = {
+  context?: {
+    text?: () => Promise<string>
+  }
+}
 
 const TABLE = 'proposals'
 
@@ -59,7 +66,22 @@ export async function createProposal(
     .select()
     .single()
   if (error) throw error
-  return data as Proposal
+
+  const proposal = data as Proposal
+
+  // Record immutable version snapshot
+  await createDocumentVersion(
+    {
+      entity_type: 'proposal',
+      entity_id: proposal.id,
+      version_number: proposal.version_number,
+      revision_label: `v${proposal.version_number}`,
+      snapshot_json: values.snapshot_json ?? {},
+    },
+    userId,
+  )
+
+  return proposal
 }
 
 export interface UpdateProposalInput {
@@ -119,11 +141,11 @@ export async function sendProposal(params: SendProposalParams): Promise<void> {
   })
   if (error) {
     console.error('sendProposal raw error:', error)
-    console.error('sendProposal error.context:', (error as any).context)
+    console.error('sendProposal error.context:', (error as FunctionErrorContext).context)
     // FunctionsHttpError has a context Response — parse the body for the real message
     let detail = error.message ?? 'Failed to send proposal'
     try {
-      const ctx = (error as any).context
+      const ctx = (error as FunctionErrorContext).context
       if (ctx) {
         const text = await ctx.text?.()
         console.error('sendProposal error body:', text)

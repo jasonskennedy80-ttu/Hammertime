@@ -7,10 +7,11 @@ import {
   EnvelopeIcon,
   EyeIcon,
   CheckCircleIcon,
+  ClockIcon,
 } from '@heroicons/react/24/outline'
 import { useProjectWithRelations } from '@/hooks/useProjects'
 import { useProposals, useCreateProposal, useUpdateProposal, useDeleteProposal } from '@/hooks/useProposals'
-import { useCompany } from '@/contexts/CompanyContext'
+import { useCompany } from '@/contexts/useCompany'
 import { sendProposal } from '@/services/proposal.service'
 import { PageHeader } from '@/components/layout/PageHeader'
 import { Button } from '@/components/ui/Button'
@@ -28,6 +29,7 @@ import { formatDate } from '@/lib/utils/format'
 import { DOCUMENT_STATUS_LABELS } from '@/types/enums'
 import type { DocumentStatus } from '@/types/enums'
 import type { Proposal } from '@/types/app.types'
+import { VersionHistory } from '@/components/documents/VersionHistory'
 import { format, addDays } from 'date-fns'
 
 const statusColors: Record<DocumentStatus, 'gray' | 'sky' | 'yellow' | 'green' | 'red'> = {
@@ -54,6 +56,7 @@ export function ProposalsPage() {
   // Form modal state
   const [formModal, setFormModal] = useState<{ open: boolean; proposal?: Proposal }>({ open: false })
   const [deleteModal, setDeleteModal] = useState<Proposal | null>(null)
+  const [historyId, setHistoryId] = useState<string | null>(null)
 
   // Form fields
   const [title, setTitle] = useState('')
@@ -166,8 +169,8 @@ export function ProposalsPage() {
         proposalId: sendModal.id,
       })
       setSendSuccess(true)
-    } catch (err: any) {
-      setSendError(err.message ?? 'Failed to send. Please try again.')
+    } catch (err: unknown) {
+      setSendError(err instanceof Error ? err.message : 'Failed to send. Please try again.')
     } finally {
       setSending(false)
     }
@@ -249,6 +252,13 @@ export function ProposalsPage() {
                     <PencilIcon className="h-4 w-4" />
                   </button>
                   <button
+                    onClick={() => setHistoryId(historyId === proposal.id ? null : proposal.id)}
+                    className={`p-1.5 rounded ${historyId === proposal.id ? 'text-sky-600' : 'text-slate-400 hover:text-sky-600'}`}
+                    title="Version history"
+                  >
+                    <ClockIcon className="h-4 w-4" />
+                  </button>
+                  <button
                     onClick={() => setDeleteModal(proposal)}
                     className="p-1.5 text-slate-400 hover:text-red-600 rounded"
                     title="Delete"
@@ -257,6 +267,14 @@ export function ProposalsPage() {
                   </button>
                 </div>
               </div>
+              {historyId === proposal.id && (
+                <div className="mt-3 pt-3 border-t border-slate-100 dark:border-slate-700 px-1">
+                  <p className="text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-2">
+                    Version History
+                  </p>
+                  <VersionHistory entityType="proposal" entityId={proposal.id} />
+                </div>
+              )}
             </Card>
           ))}
         </div>

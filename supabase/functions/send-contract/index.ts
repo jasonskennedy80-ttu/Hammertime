@@ -82,16 +82,67 @@ function json(data: unknown, status = 200) {
 
 // ─── HTML Email Builder ───────────────────────────────────────────────────────
 
+type EmailCustomer = {
+  first_name?: string
+  last_name?: string
+  company?: string
+  phone?: string
+  email?: string
+}
+
+type EmailCompany = {
+  tagline?: string
+  phone?: string
+  email?: string
+  address?: string
+  license?: string
+}
+
+type EmailLineItem = {
+  name?: string
+  description?: string
+  quantity?: number
+  unit?: string
+  total?: number
+}
+
+type EmailPaymentScheduleItem = {
+  label?: string
+  due_trigger?: string
+  amount?: number
+}
+
+type EmailProject = {
+  name?: string
+  location_address?: string
+  subtotal?: number
+  tax_rate?: number
+  tax_amount?: number
+  discount_amount?: number
+  total?: number
+  customer?: EmailCustomer
+  scope_sections?: unknown[]
+  line_items?: EmailLineItem[]
+  payment_schedule?: EmailPaymentScheduleItem[]
+}
+
+type EmailContract = {
+  title?: string
+  version_number?: number
+  terms?: string
+  warranty_terms?: string
+}
+
 function buildEmailHtml({ contract, project, company, message }: {
-  contract: Record<string, any>
-  project: Record<string, any>
-  company: Record<string, any>
+  contract: EmailContract
+  project: EmailProject
+  company: EmailCompany
   message?: string
 }) {
   const customer = project.customer ?? {}
-  const scopeSections: any[] = project.scope_sections ?? []
-  const lineItems: any[] = project.line_items ?? []
-  const paymentSchedule: any[] = project.payment_schedule ?? []
+  const scopeSections = project.scope_sections ?? []
+  const lineItems = project.line_items ?? []
+  const paymentSchedule = project.payment_schedule ?? []
 
   const fmtCurrency = (n: number) =>
     new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(n ?? 0)
@@ -264,7 +315,7 @@ function buildEmailHtml({ contract, project, company, message }: {
             </tr>`).join('')}
             <tr style="background:#0f172a;">
               <td colspan="2" style="padding:10px 14px;font-size:13px;font-weight:600;color:#ffffff;">Total</td>
-              <td style="padding:10px 14px;font-size:14px;font-weight:700;color:#34d399;text-align:right;">${fmtCurrency(paymentSchedule.reduce((s: number, i: any) => s + (i.amount ?? 0), 0))}</td>
+              <td style="padding:10px 14px;font-size:14px;font-weight:700;color:#34d399;text-align:right;">${fmtCurrency(paymentSchedule.reduce((s, i) => s + (i.amount ?? 0), 0))}</td>
             </tr>
           </table>
         </td>

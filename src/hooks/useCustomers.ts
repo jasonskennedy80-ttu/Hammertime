@@ -7,7 +7,7 @@ import {
   deleteCustomer,
 } from '@/services/customers.service'
 import { logActivity } from '@/services/activityLog.service'
-import { useAuth } from '@/contexts/AuthContext'
+import { useAuth } from '@/contexts/useAuth'
 import type { CustomerFilters } from '@/types/app.types'
 import type { CustomerFormValues } from '@/lib/validations/customer.schema'
 

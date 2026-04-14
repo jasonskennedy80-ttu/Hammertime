@@ -1,7 +1,7 @@
 import { Bars3Icon, UserCircleIcon, SunIcon, MoonIcon } from '@heroicons/react/24/outline'
 import { useNavigate } from 'react-router-dom'
-import { useAuth } from '@/contexts/AuthContext'
-import { useTheme } from '@/contexts/ThemeContext'
+import { useAuth } from '@/contexts/useAuth'
+import { useTheme } from '@/contexts/useTheme'
 import { signOut } from '@/services/auth.service'
 import { ROUTES } from '@/router/routes'
 

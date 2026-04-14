@@ -7,7 +7,7 @@ import { getRecentActivity } from '@/services/activityLog.service'
 import { PageHeader } from '@/components/layout/PageHeader'
 import { Card } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
-import { useAuth } from '@/contexts/AuthContext'
+import { useAuth } from '@/contexts/useAuth'
 import { ROUTES } from '@/router/routes'
 import { formatCurrency, formatRelativeTime, formatDate } from '@/lib/utils/format'
 import { ProjectStatusBadge } from '@/components/projects/ProjectStatusBadge'
@@ -17,6 +17,7 @@ import type { ProjectStatus } from '@/types/enums'
 export function DashboardPage() {
   const navigate = useNavigate()
   const { profile } = useAuth()
+  const now = new Date()
 
   const { data: customers } = useQuery({
     queryKey: ['customers', 'list', {}],
@@ -44,7 +45,7 @@ export function DashboardPage() {
 
   // Upcoming deadlines: projects with completion_date in the future, sorted soonest first
   const upcomingDeadlines = (projects?.data ?? [])
-    .filter((p) => p.completion_date && new Date(p.completion_date) >= new Date() && !['completed', 'cancelled'].includes(p.status))
+    .filter((p) => p.completion_date && new Date(p.completion_date) >= now && !['completed', 'cancelled'].includes(p.status))
     .sort((a, b) => new Date(a.completion_date!).getTime() - new Date(b.completion_date!).getTime())
     .slice(0, 5)
 
@@ -102,7 +103,7 @@ export function DashboardPage() {
         <Card className="mb-6">
           <h2 className="font-semibold text-slate-900 dark:text-slate-100 mb-3">Project Pipeline</h2>
           <div className="flex gap-2 flex-wrap">
-            {Object.entries(PROJECT_STATUS_LABELS).map(([status, label]) => {
+            {Object.entries(PROJECT_STATUS_LABELS).map(([status]) => {
               const count = pipelineCounts[status] ?? 0
               if (count === 0) return null
               return (
@@ -189,7 +190,7 @@ export function DashboardPage() {
           <div className="space-y-0">
             {upcomingDeadlines.map((project) => {
               const daysLeft = Math.ceil(
-                (new Date(project.completion_date!).getTime() - Date.now()) / (1000 * 60 * 60 * 24),
+                (new Date(project.completion_date!).getTime() - now.getTime()) / (1000 * 60 * 60 * 24),
               )
               return (
                 <button

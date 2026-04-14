@@ -1,6 +1,13 @@
 import { supabase } from '@/config/supabase'
 import type { Contract, ProjectWithRelations } from '@/types/app.types'
-import type { CompanyInfo } from '@/contexts/CompanyContext'
+import type { CompanyInfo } from '@/contexts/company-context'
+import { createDocumentVersion } from './documentVersions.service'
+
+type FunctionErrorContext = {
+  context?: {
+    text?: () => Promise<string>
+  }
+}
 
 const TABLE = 'contracts'
 
@@ -58,7 +65,26 @@ export async function createContract(
     .select()
     .single()
   if (error) throw error
-  return data as Contract
+
+  const contract = data as Contract
+
+  // Record immutable version snapshot
+  await createDocumentVersion(
+    {
+      entity_type: 'contract',
+      entity_id: contract.id,
+      version_number: contract.version_number,
+      revision_label: `v${contract.version_number}`,
+      snapshot_json: {
+        title: contract.title,
+        terms: contract.terms,
+        warranty_terms: contract.warranty_terms,
+      },
+    },
+    userId,
+  )
+
+  return contract
 }
 
 export interface UpdateContractInput {
@@ -115,7 +141,7 @@ export async function sendContract(params: SendContractParams): Promise<void> {
   if (error) {
     let detail = error.message ?? 'Failed to send contract'
     try {
-      const ctx = (error as any).context
+      const ctx = (error as FunctionErrorContext).context
       if (ctx) {
         const text = await ctx.text?.()
         const parsed = text ? JSON.parse(text) : null

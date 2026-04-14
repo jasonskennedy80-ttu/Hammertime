@@ -1,6 +1,7 @@
 import { useForm } from 'react-hook-form'
 import { WrenchScrewdriverIcon } from '@heroicons/react/24/outline'
-import { useCompany, type CompanyInfo } from '@/contexts/CompanyContext'
+import { useCompany } from '@/contexts/useCompany'
+import type { CompanyInfo } from '@/contexts/company-context'
 import { PageHeader } from '@/components/layout/PageHeader'
 import { FormField } from '@/components/forms/FormField'
 import { Input } from '@/components/ui/Input'

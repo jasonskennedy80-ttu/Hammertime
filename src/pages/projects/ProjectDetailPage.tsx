@@ -19,7 +19,6 @@ import { Badge } from '@/components/ui/Badge'
 import { Modal } from '@/components/ui/Modal'
 import { PageSpinner } from '@/components/ui/Spinner'
 import { ActivityFeed } from '@/components/activity/ActivityFeed'
-import { ProjectStatusBadge } from '@/components/projects/ProjectStatusBadge'
 import { ScopeSectionForm } from '@/components/forms/ScopeSectionForm'
 import { LineItemForm } from '@/components/forms/LineItemForm'
 import { PaymentScheduleEditor } from './PaymentScheduleEditor'
@@ -67,7 +66,11 @@ export function ProjectDetailPage() {
   function toggleSection(id: string) {
     setExpandedSections((prev) => {
       const next = new Set(prev)
-      next.has(id) ? next.delete(id) : next.add(id)
+      if (next.has(id)) {
+        next.delete(id)
+      } else {
+        next.add(id)
+      }
       return next
     })
   }

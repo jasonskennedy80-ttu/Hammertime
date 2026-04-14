@@ -46,7 +46,14 @@ export function ProjectsPage() {
   )
 
   function set(key: string, value: string) {
-    setSearchParams((p) => { value ? p.set(key, value) : p.delete(key); return p })
+    setSearchParams((p) => {
+      if (value) {
+        p.set(key, value)
+      } else {
+        p.delete(key)
+      }
+      return p
+    })
   }
 
   return (
